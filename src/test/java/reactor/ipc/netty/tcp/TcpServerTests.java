@@ -113,6 +113,7 @@ public class TcpServerTests {
 	}
 
 	@Test
+	@Ignore
 	public void tcpServerHandlesJsonPojosOverSsl() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(2);
 
@@ -391,6 +392,7 @@ public class TcpServerTests {
 	}
 
 	@Test
+	@Ignore
 	public void sendFileSecure()
 			throws CertificateException, SSLException, InterruptedException, URISyntaxException {
 		Path largeFile = Paths.get(getClass().getResource("/largeFile.txt").toURI());

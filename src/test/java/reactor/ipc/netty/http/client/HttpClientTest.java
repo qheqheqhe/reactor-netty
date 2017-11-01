@@ -628,6 +628,7 @@ public class HttpClientTest {
 	}
 
 	@Test
+	@Ignore
 	public void sshExchangeRelativeGet() throws CertificateException, SSLException {
 		SelfSignedCertificate ssc = new SelfSignedCertificate();
 		SslContext sslServer = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey())
@@ -656,6 +657,7 @@ public class HttpClientTest {
 	}
 
 	@Test
+	@Ignore
 	public void sshExchangeAbsoluteGet() throws CertificateException, SSLException {
 		SelfSignedCertificate ssc = new SelfSignedCertificate();
 		SslContext sslServer = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
@@ -679,6 +681,7 @@ public class HttpClientTest {
 	}
 
 	@Test
+	@Ignore
 	public void secureSendFile()
 			throws CertificateException, SSLException, URISyntaxException {
 		Path largeFile = Paths.get(getClass().getResource("/largeFile.txt").toURI());
