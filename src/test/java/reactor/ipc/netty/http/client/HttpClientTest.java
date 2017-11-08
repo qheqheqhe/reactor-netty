@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.cert.CertificateException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -121,7 +122,7 @@ public class HttpClientTest {
 	}
 
 	@Test
-	public void userIssue() throws Exception {
+	public void userIssue_1() throws Exception {
 		final PoolResources pool = PoolResources.fixed("local", 1);
 		CountDownLatch latch = new CountDownLatch(3);
 		Set<String> localAddresses = ConcurrentHashMap.newKeySet();
@@ -155,6 +156,49 @@ public class HttpClientTest {
 		pool.dispose();
 		serverContext.dispose();
 		System.out.println("Local Addresses used: " + localAddresses);
+	}
+
+	@Test
+	public void userIssue_2() throws Exception {
+		doTestUserIssue(false);
+	}
+
+	@Test
+	public void userIssue_3() throws Exception {
+		doTestUserIssue(true);
+	}
+
+	private void doTestUserIssue(boolean withSend) throws Exception {
+		//final PoolResources pool = PoolResources.fixed("local", 1);
+		CountDownLatch latch = new CountDownLatch(1000);
+		NettyContext serverContext =
+				HttpServer.create(8080)
+				          .newRouter(r -> r.post("/", (req, resp) ->
+				                     req.receive()
+				                        .asString()
+				                        .flatMap(data -> {
+				                                 latch.countDown();
+				                                 System.out.println("Count Down: "+latch.getCount());
+				                                 if (withSend) {
+				                                     return resp.status(200).send();
+				                                 }
+				                                 else {
+				                                     return resp.status(200);
+				                                 }
+				                        })))
+				          .block();
+		final HttpClient client =
+				HttpClient.create(options -> options//.poolResources(pool)
+				                                    .connectAddress(() -> new InetSocketAddress(8080)));
+		Flux.range(0, 1000)
+		    .flatMap(data -> client.post("/", req ->
+		             req.sendString(Flux.just(String.join("", Collections.nCopies(1000, "a"))))))
+		    .flatMap(response -> response.receive())
+		    .subscribe();
+		latch.await();
+		assertThat(latch.getCount() == 0);
+		//pool.dispose();
+		serverContext.dispose();
 	}
 
 	@Test
